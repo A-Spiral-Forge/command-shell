@@ -1,4 +1,4 @@
-var commands = require('./commands.js');
+const commands = require('./commands.js');
 
 try {
 	process.chdir('/');
@@ -10,16 +10,35 @@ try {
 process.stdout.write('\nprompt:' + process.cwd() + '>');
 
 process.stdin.on('data', function (data) {
-	var cmd = data.toString().trim();
-	cmd = cmd.split(' ');
-	var fn = cmd[0];
+	const cmd = data.toString().trim().split(' ');
+	const fn = cmd[0];
 
-	var args = cmd.slice(1);
+	const args = cmd.slice(1);
 
-	try {
+	if (!Object.keys(commands).includes(fn)) {
+		try {
+			commands.binaryFile.call(null, fn, args);
+		} catch (err) {
+			process.stdout.write('No such binary file or command exists.');
+		}
+	} else {
 		commands[fn].call(null, args);
-	} catch (err) {
-		process.stdout.write('No such command exists.');
-		process.stdout.write('\nprompt:' + process.cwd() + '>');
 	}
+
+	process.stdout.write('\nprompt:' + process.cwd() + '>');
+});
+
+process.on('exit', (code) => {
+	console.log(`Shell exited with exit code: ${code}`);
+	console.log('BYE! BYE!!');
+});
+
+process.on('uncaughtException', (err) => {
+	console.log(err);
+	process.stdout.write('\nprompt:' + process.cwd() + '>');
+});
+
+process.on('unhandledRejection', (err) => {
+	console.log(err);
+	process.stdout.write('\nprompt:' + process.cwd() + '>');
 });
